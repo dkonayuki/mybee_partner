@@ -1,11 +1,22 @@
+import 'bootstrap/dist/css/bootstrap.css';
+
 import React from 'react';
+import PropTypes from 'prop-types';
 import CONSTANTS from '../../data/Constants';
 import {
   getLoginStatus,
   getPageAccessToken,
-  subscribe
+  subscribe,
+  getSubscribedApps
 } from '../../utils/FbsdkHelper';
-import Alert from '../Alert';
+import {
+  Button
+} from 'react-bootstrap';
+import Page from '../Page';
+import { connect } from 'react-redux';
+import {
+  showMessage
+} from '../../actions/alert';
 
 import './App.css';
 
@@ -25,10 +36,12 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      isSubscribed: false
+      isSubscribed: false,
+      showButton: false
     };
 
     this.setFbAsyncInit = this.setFbAsyncInit.bind(this);
+    this.handleSubscribe = this.handleSubscribe.bind(this);
     this.checkLoginState = this.checkLoginState.bind(this);
   }
 
@@ -43,8 +56,9 @@ class App extends React.Component {
         appId: CONSTANTS.FB_APP_ID,
         autoLogAppEvents: true,
         xfbml: true,
-        version: CONSTANTS.FB_API_VERSION
-        // cookie: true // use cookie to persist login state
+        version: CONSTANTS.FB_API_VERSION,
+        status: true,
+        cookie: true // use cookie to persist login state
       });
 
       window.FB.Event.subscribe('auth.statusChange', this.checkLoginState);
@@ -55,29 +69,49 @@ class App extends React.Component {
     const response = await getLoginStatus();
     if (response.authResponse) {
       // authorized
-        console.log(response.authResponse);
-        const accounts = await getPageAccessToken();
-        console.log(accounts);
-        const {
-          access_token: accessToken,
-          id,
-          name
-        } = accounts[0];
-      if (window.confirm(`Subscribe page ${name} to MyBee?`)) {
-        console.log("Going to subscribe: pageId=", id);
-        const result = await subscribe(id, accessToken);
-        if (result) {
-          this.setState({
-            isSubscribed: true
-          });
+      const accounts = await getPageAccessToken();
+      const {
+        access_token: accessToken,
+        id,
+        name
+      } = accounts[0];
+      this.setState({
+        pageName: name,
+        pageId: id,
+        accessToken
+      });
+
+      const apps = await getSubscribedApps(id, accessToken);
+      let showButton = true;
+
+      apps.forEach((app) => {
+        const { id: appId } = app;
+        if (appId === CONSTANTS.FB_APP_ID) {
+          this.props.onShowMessage(CONSTANTS.ALERT.MESSAGE.ALREADLY_SUBSCRIBED(name));
+          showButton = false;
         }
-      }
+      });
+
+      this.setState({
+        showButton
+      });
+    }
+  }
+
+  async handleSubscribe() {
+    const { pageId, accessToken, pageName } = this.state;
+    if (window.confirm(`Subscribe page '${pageName}' to MyBee?`)) {
+      await subscribe(pageId, accessToken);
+      this.props.onShowMessage(CONSTANTS.ALERT.MESSAGE.SUBSCRIBED_SUCCESS);
+      this.setState({
+        showButton: false
+      });
     }
   }
 
   render() {
     return (
-      <div>
+      <Page>
         <div
           className="fb-login-button"
           data-max-rows="1"
@@ -88,15 +122,26 @@ class App extends React.Component {
           data-use-continue-as="true"
           data-scope="public_profile,email,manage_pages"
         />
-        {this.state.isSubscribed &&
-          <Alert
-            message='Subscribed successfully!'
-          />
+        <br />
+        {this.state.showButton &&
+          <Button
+            className="subscribe-btn"
+            bsStyle="primary"
+            onClick={this.handleSubscribe}
+          >
+            Subscribe
+          </Button>
         }
-      </div>
+      </Page>
     );
   }
 }
 
+App.propTypes = {
+  onShowMessage: PropTypes.func.isRequired
+};
 
-export default App;
+export default connect(
+  null,
+  { onShowMessage: showMessage } // mapDispatchToProps
+)(App);

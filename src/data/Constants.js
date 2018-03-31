@@ -28,7 +28,24 @@ const environments = {
 const envConsts = environments[process.env.NODE_ENV];
 
 const CONSTANTS = Object.assign({}, envConsts, {
-  FB_API_VERSION: 'v2.12'
+  ACTION_TYPES: {
+    STORE_USER: 'STORE_USER',
+    SHOW_ERROR: 'SHOW_ERROR',
+    SHOW_MESSAGE: 'SHOW_MESSAGE',
+    CLEAR_ALERT: 'CLEAR_ALERT'
+  },
+  FB_API_VERSION: 'v2.12',
+  ALERT: {
+    TITLE: {
+      ERROR: 'Error'
+    },
+    MESSAGE: {
+      WELCOME: 'Welcome to MyBee!',
+      ALREADLY_SUBSCRIBED: name => `Your page ${name} already subscribed to MyBee`,
+      SUBSCRIBED_SUCCESS: 'Subscribed to MyBee successfully!',
+      ERROR: 'Error!'
+    }
+  }
 });
 
 export default CONSTANTS;

@@ -1,6 +1,7 @@
 {
   "name": "mybee_partner",
   "version": "0.1.0",
+  "homepage": "http://mybee.dkonayuki.com/partner",
   "private": true,
   "devDependencies": {
     "eslint": "^3.15.0",
@@ -11,9 +12,13 @@
     "react-scripts": "1.1.1"
   },
   "dependencies": {
+    "bootstrap": "^4.0.0",
+    "prop-types": "^15.6.1",
     "react": "^16.3.0",
     "react-bootstrap": "^0.32.1",
-    "react-dom": "^16.3.0"
+    "react-dom": "^16.3.0",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2"
   },
   "scripts": {
     "start": "PORT=3002 react-scripts start",

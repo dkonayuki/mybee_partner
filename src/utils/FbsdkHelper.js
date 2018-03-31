@@ -52,3 +52,16 @@ export async function subscribe(pageId = '', accessToken) {
     });
   });
 }
+
+export async function getSubscribedApps(pageId, accessToken) {
+  return new Promise((resolve, reject) => {
+    window.FB.api(`/${pageId}/subscribed_apps`, { access_token: accessToken }, (response) => {
+      const { data, error } = response;
+      if (error) {
+        reject(error);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
