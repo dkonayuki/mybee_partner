@@ -41,8 +41,8 @@ const CONSTANTS = Object.assign({}, envConsts, {
     },
     MESSAGE: {
       WELCOME: 'Welcome to MyBee!',
-      ALREADLY_SUBSCRIBED: name => `Your page ${name} already subscribed to MyBee`,
-      SUBSCRIBED_SUCCESS: 'Subscribed to MyBee successfully!',
+      ALREADLY_SUBSCRIBED: name => `Mybee was already subscribed to your page '${name}'`,
+      SUBSCRIBED_SUCCESS: 'Subscribed successfully!',
       ERROR: 'Error!'
     }
   }

@@ -1,0 +1,28 @@
+.page__content {
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .page {
+    margin: 20px;
+  }
+}
+
+@media (min-width: 992px) {
+  .page {
+    margin: 20px auto;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    max-width: 1400px;
+  }
+}
+
+.alert--important {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.page__alert {
+  max-width: 990px;
+  margin: 0 auto;
+}

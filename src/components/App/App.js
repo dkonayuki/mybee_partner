@@ -100,7 +100,8 @@ class App extends React.Component {
 
   async handleSubscribe() {
     const { pageId, accessToken, pageName } = this.state;
-    if (window.confirm(`Subscribe page '${pageName}' to MyBee?`)) {
+    if (window.confirm(`Subscribe MyBee to page '${pageName}'?`)) {
+      // subscribe mybee app to this page
       await subscribe(pageId, accessToken);
       this.props.onShowMessage(CONSTANTS.ALERT.MESSAGE.SUBSCRIBED_SUCCESS);
       this.setState({
