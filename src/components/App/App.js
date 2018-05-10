@@ -121,7 +121,7 @@ class App extends React.Component {
           data-show-faces="false"
           data-auto-logout-link="true"
           data-use-continue-as="true"
-          data-scope="public_profile,email,manage_pages"
+          data-scope="public_profile,email,manage_pages,pages_messaging,pages_messaging_phone_number,pages_messaging_subscriptions" // eslint-disable-line
         />
         <br />
         {this.state.showButton &&
