@@ -61,14 +61,12 @@ class App extends React.Component {
       });
 
       window.FB.Event.subscribe('auth.statusChange', this.checkLoginState);
-      window.FB.Event.subscribe('auth.logout', () => this.setState({ pages: [] }));
-      this.checkLoginState();
     };
   }
 
   async checkLoginState() {
     const response = await getLoginStatus();
-    if (response.authResponse) {
+    if (response.status === 'connected') {
       // authorized
       const accounts = await getPageAccessToken();
       const promises = accounts.map(async (account) => {
@@ -100,6 +98,11 @@ class App extends React.Component {
 
       this.setState({
         pages
+      });
+    } else {
+      // reset page list
+      this.setState({
+        pages: []
       });
     }
   }
