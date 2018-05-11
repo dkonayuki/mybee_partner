@@ -36,8 +36,7 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      isSubscribed: false,
-      showButton: false
+      pages: []
     };
 
     this.setFbAsyncInit = this.setFbAsyncInit.bind(this);
@@ -62,6 +61,8 @@ class App extends React.Component {
       });
 
       window.FB.Event.subscribe('auth.statusChange', this.checkLoginState);
+      window.FB.Event.subscribe('auth.logout', () => this.setState({ pages: [] }));
+      this.checkLoginState();
     };
   }
 
@@ -70,47 +71,93 @@ class App extends React.Component {
     if (response.authResponse) {
       // authorized
       const accounts = await getPageAccessToken();
-      const {
-        access_token: accessToken,
-        id,
-        name
-      } = accounts[0];
-      this.setState({
-        pageName: name,
-        pageId: id,
-        accessToken
+      const promises = accounts.map(async (account) => {
+        const {
+          access_token: accessToken,
+          id,
+          name
+        } = account;
+
+        const apps = await getSubscribedApps(id, accessToken);
+        let isSubscribed = false;
+
+        apps.forEach((app) => {
+          const { id: appId } = app;
+          if (appId === CONSTANTS.FB_APP_ID) {
+            isSubscribed = true;
+          }
+        });
+
+        return {
+          accessToken,
+          id,
+          name,
+          isSubscribed
+        };
       });
 
-      const apps = await getSubscribedApps(id, accessToken);
-      let showButton = true;
-
-      apps.forEach((app) => {
-        const { id: appId } = app;
-        if (appId === CONSTANTS.FB_APP_ID) {
-          this.props.onShowMessage(CONSTANTS.ALERT.MESSAGE.ALREADLY_SUBSCRIBED(name));
-          showButton = false;
-        }
-      });
+      const pages = await Promise.all(promises);
 
       this.setState({
-        showButton
+        pages
       });
     }
   }
 
-  async handleSubscribe() {
-    const { pageId, accessToken, pageName } = this.state;
-    if (window.confirm(`Subscribe MyBee to page '${pageName}'?`)) {
+  async handleSubscribe(pageId) {
+    const { id, accessToken, name } = this.state.pages.filter(page => page.id === pageId);
+
+    if (window.confirm(`Subscribe MyBee to page '${name}'?`)) {
       // subscribe mybee app to this page
       await subscribe(pageId, accessToken);
       this.props.onShowMessage(CONSTANTS.ALERT.MESSAGE.SUBSCRIBED_SUCCESS);
+
       this.setState({
-        showButton: false
+        pages: this.state.pages.map((page) => {
+          // update subscribed list
+          if (page.id === id) {
+            return {
+              ...page,
+              isSubscribed: true
+            };
+          }
+          return page;
+        })
       });
     }
   }
 
   render() {
+    const list = this.state.pages.map(page => (
+      <div
+        key={page.id}
+        className="user-managed-page"
+      >
+        {page.isSubscribed ?
+          <Button
+            className="subscribe-btn"
+            bsStyle="success"
+            disabled
+          >
+            Subscribed
+          </Button>
+        :
+          <Button
+            className="subscribe-btn"
+            bsStyle="primary"
+            onClick={() => this.handleSubscribe(page.id)}
+          >
+            Subscribe
+          </Button>
+        }
+        <ul>
+          <li>{page.id}</li>
+          <li>{page.name}</li>
+          <li>{page.accessToken}</li>
+        </ul>
+      </div>
+    ));
+
     return (
       <Page>
         <div
@@ -124,15 +171,7 @@ class App extends React.Component {
           data-scope="public_profile,email,manage_pages,pages_messaging,pages_messaging_phone_number,pages_messaging_subscriptions" // eslint-disable-line
         />
         <br />
-        {this.state.showButton &&
-          <Button
-            className="subscribe-btn"
-            bsStyle="primary"
-            onClick={this.handleSubscribe}
-          >
-            Subscribe
-          </Button>
-        }
+        {list}
       </Page>
     );
   }
