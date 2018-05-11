@@ -108,7 +108,7 @@ class App extends React.Component {
   }
 
   async handleSubscribe(pageId) {
-    const { id, accessToken, name } = this.state.pages.filter(page => page.id === pageId);
+    const { id, accessToken, name } = this.state.pages.filter(page => page.id === pageId)[0];
 
     if (window.confirm(`Subscribe MyBee to page '${name}'?`)) {
       // subscribe mybee app to this page
